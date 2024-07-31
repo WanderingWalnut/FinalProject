@@ -149,7 +149,7 @@ public class AdvertisementDisplay extends JPanel {
 
     private class AdPanel extends JPanel {
         private Image adImage;
-
+    
         public void setAdImage(String imagePath) {
             try {
                 this.adImage = ImageIO.read(new File(imagePath));
@@ -158,12 +158,12 @@ public class AdvertisementDisplay extends JPanel {
                 System.err.println("Failed to load ad image: " + e.getMessage());
             }
         }
-
+    
         public void setAdImage(Image image) {
             this.adImage = image;
             repaint();
         }
-
+    
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -171,11 +171,11 @@ public class AdvertisementDisplay extends JPanel {
                 int imgWidth = adImage.getWidth(this);
                 int imgHeight = adImage.getHeight(this);
                 double imgAspect = (double) imgHeight / imgWidth;
-
+    
                 int panelWidth = getWidth();
                 int panelHeight = getHeight();
                 double panelAspect = (double) panelHeight / panelWidth;
-
+    
                 int drawWidth, drawHeight;
                 if (imgAspect > panelAspect) {
                     drawHeight = panelHeight;
@@ -184,14 +184,15 @@ public class AdvertisementDisplay extends JPanel {
                     drawWidth = panelWidth;
                     drawHeight = (int) (panelWidth * imgAspect);
                 }
-
+    
                 int drawX = (panelWidth - drawWidth) / 2;
                 int drawY = (panelHeight - drawHeight) / 2;
-
+    
                 g.drawImage(adImage, drawX, drawY, drawWidth, drawHeight, this);
             }
         }
     }
+    
 
     private void startSubwaySimulator() {
         try {
@@ -287,19 +288,34 @@ public class AdvertisementDisplay extends JPanel {
         Graphics2D g2d = updatedMap.createGraphics();
         g2d.drawImage(mapImage, 0, 0, null);
     
+        // Get the dimensions of the map image and the panel
+        int imgWidth = mapImage.getWidth();
+        int imgHeight = mapImage.getHeight();
+        int panelWidth = adPanel.getWidth();
+        int panelHeight = adPanel.getHeight();
+    
+        double scaleX = (double) panelWidth / imgWidth;
+        double scaleY = (double) panelHeight / imgHeight;
+    
         // Draw all train positions
         for (Map.Entry<Integer, Point> entry : trainPositions.entrySet()) {
             int trainNumber = entry.getKey();
             Point pos = entry.getValue();
+            
+            // Scale the coordinates
+            int scaledX = (int) (pos.x * scaleX);
+            int scaledY = (int) (pos.y * scaleY);
+    
             g2d.setColor(Color.RED);
-            g2d.fillOval(pos.x - 5, pos.y - 5, 10, 10);
-            System.out.println("Drawing train number " + trainNumber + " on map at coordinates: (" + pos.x + ", " + pos.y + ")");
+            g2d.fillOval(scaledX - 5, scaledY - 5, 10, 10);
+            System.out.println("Drawing train number " + trainNumber + " on map at coordinates: (" + scaledX + ", " + scaledY + ")");
         }
     
         g2d.dispose();
         adPanel.setAdImage(updatedMap);
         System.out.println("Map updated with new train positions.");
     }
+    
 
 
     public static void main(String[] args) {
