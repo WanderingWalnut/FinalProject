@@ -9,6 +9,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import javax.imageio.ImageIO;
@@ -27,14 +29,15 @@ public class AdvertisementDisplay extends JPanel {
     private ImageIcon mapIcon;
     private BufferedImage mapImage;
     private Map<Integer, Point> trainPositions = new HashMap<>(); // Train number to coordinates
-    private TrainMap trainMap; // Declare trainMap
+    private TrainMap trainMap = new TrainMap(); // Initialize TrainMap
+    private JLabel weatherVisualLabel; // Label to display weather visual
+    private JLabel weatherLabel; // Label to display weather data
+    private String weatherCondition; // Store the weather condition
+    private JLabel weatherConditionLabel; // Label to display weather condition text
 
     public AdvertisementDisplay() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-
-        // Initialize trainMap
-        trainMap = new TrainMap();
 
         // Load the map image
         try {
@@ -89,8 +92,10 @@ public class AdvertisementDisplay extends JPanel {
 
         // Add a panel for weather data to the right of the ad panel
         JPanel weatherPanel = new JPanel();
-        weatherPanel.setBackground(Color.LIGHT_GRAY); // Placeholder color
+        weatherPanel.setBackground(Color.BLACK); // Placeholder color
         weatherPanel.setPreferredSize(new Dimension(854, 1600)); // Adjust dimensions as needed
+        weatherPanel.setLayout(new BoxLayout(weatherPanel, BoxLayout.Y_AXIS)); // Set BoxLayout for vertical alignment
+
         gbc.gridx = 2;
         gbc.gridy = 0;
         gbc.gridwidth = 1; // Span one column
@@ -98,7 +103,46 @@ public class AdvertisementDisplay extends JPanel {
         gbc.weightx = 1;
         gbc.weighty = 1;
         gbc.fill = GridBagConstraints.BOTH;
-        add(weatherPanel, gbc);
+        add(weatherPanel, gbc); // Ensure correct constraints are used
+
+        // Add a JLabel to display weather data
+        weatherLabel = new JLabel("Fetching weather...", SwingConstants.CENTER);
+        weatherLabel.setFont(new Font("Serif", Font.PLAIN, 30)); // Adjust font size as needed
+        weatherLabel.setForeground(Color.WHITE); // Adjust color as needed
+        weatherVisualLabel = new JLabel("", SwingConstants.CENTER); // Center-align text and image
+        weatherConditionLabel = new JLabel("", SwingConstants.CENTER); // Label for weather condition
+        weatherConditionLabel.setFont(new Font("Serif", Font.PLAIN, 30)); // Adjust font size as needed
+        weatherConditionLabel.setForeground(Color.WHITE); // Adjust color as needed
+
+        // Add weatherLabel, weatherVisualLabel, and weatherConditionLabel to
+        // weatherPanel
+        weatherLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        weatherVisualLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        weatherConditionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        weatherPanel.add(Box.createVerticalGlue()); // Add vertical space
+        weatherPanel.add(weatherLabel);
+        weatherPanel.add(Box.createVerticalStrut(20)); // Add space between the labels
+        weatherPanel.add(weatherVisualLabel);
+        weatherPanel.add(Box.createVerticalStrut(20)); // Add space between the labels
+        weatherPanel.add(weatherConditionLabel); // Add weather condition label
+        weatherPanel.add(Box.createVerticalGlue()); // Add vertical space
+
+        // Add a component listener to handle the size of weatherVisualLabel
+        weatherVisualLabel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateWeatherVisual();
+            }
+        });
+
+        // Add a component listener to handle the size of weatherVisualLabel
+        weatherVisualLabel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateWeatherVisual();
+            }
+        });
 
         // Add a component listener to handle resizing
         adPanel.addComponentListener(new ComponentAdapter() {
@@ -122,14 +166,62 @@ public class AdvertisementDisplay extends JPanel {
         // Start the SubwaySimulator process
         System.out.println("Calling startSubwaySimulator...");
         startSubwaySimulator();
+
+        // Fetch and display weather data
+        fetchAndDisplayWeather();
     }
+
+    // Modify the fetchAndDisplayWeather method in AdvertisementDisplay class
+    private void fetchAndDisplayWeather() {
+        new Thread(() -> {
+            try {
+                String weatherData = WeatherFetch.fetchHTML("https://wttr.in/Calgary?format=" + URLEncoder.encode("%t+%c", StandardCharsets.UTF_8));
+                String parsedWeather = WeatherFetch.parseHTML(weatherData);
+                String[] weatherParts = parsedWeather.split(" ");
+                weatherCondition = weatherParts[1]; // Extract condition
+    
+                String conditionText = getConditionText(weatherCondition);
+    
+                SwingUtilities.invokeLater(() -> {
+                    weatherLabel.setText(parsedWeather);
+                    weatherLabel.setFont(new Font("Serif", Font.PLAIN, 24)); // Ensure larger font size is set
+                    weatherLabel.setForeground(Color.WHITE); // Ensure the font color is set to white
+                    weatherConditionLabel.setText(conditionText); // Set the weather condition text
+                    updateWeatherVisual();
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                SwingUtilities.invokeLater(() -> weatherLabel.setText("Weather data not found."));
+            }
+        }).start();
+    }
+    
+    // Helper method to get condition text based on the weather condition icon
+    private String getConditionText(String condition) {
+        switch (condition) {
+            case "☀️":
+                return "Sunny";
+            case "🌧️":
+                return "Rainy";
+            case "⛅":
+                return "Partly Cloudy";
+            case "☁️":
+                return "Cloudy";
+            case "❄️":
+                return "Snowy";
+            default:
+                return "Weather condition not recognized.";
+        }
+    }
+    
 
     private class AdTask extends TimerTask {
         @Override
         public void run() {
             SwingUtilities.invokeLater(() -> {
                 if (ads.size() > 0) {
-                    if (currentAdIndex % 2 == 0) { // Show map every second interval (10 seconds for ads, 5 seconds for map)
+                    if (currentAdIndex % 2 == 0) { // Show map every second interval (10 seconds for ads, 5 seconds for
+                                                   // map)
                         if (mapIcon != null) {
                             adPanel.setAdImage(mapIcon.getImage());
                             System.out.println("Displaying map.");
@@ -145,11 +237,10 @@ public class AdvertisementDisplay extends JPanel {
             });
         }
     }
-    
 
     private class AdPanel extends JPanel {
         private Image adImage;
-    
+
         public void setAdImage(String imagePath) {
             try {
                 this.adImage = ImageIO.read(new File(imagePath));
@@ -158,12 +249,12 @@ public class AdvertisementDisplay extends JPanel {
                 System.err.println("Failed to load ad image: " + e.getMessage());
             }
         }
-    
+
         public void setAdImage(Image image) {
             this.adImage = image;
             repaint();
         }
-    
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -171,11 +262,11 @@ public class AdvertisementDisplay extends JPanel {
                 int imgWidth = adImage.getWidth(this);
                 int imgHeight = adImage.getHeight(this);
                 double imgAspect = (double) imgHeight / imgWidth;
-    
+
                 int panelWidth = getWidth();
                 int panelHeight = getHeight();
                 double panelAspect = (double) panelHeight / panelWidth;
-    
+
                 int drawWidth, drawHeight;
                 if (imgAspect > panelAspect) {
                     drawHeight = panelHeight;
@@ -184,15 +275,14 @@ public class AdvertisementDisplay extends JPanel {
                     drawWidth = panelWidth;
                     drawHeight = (int) (panelWidth * imgAspect);
                 }
-    
+
                 int drawX = (panelWidth - drawWidth) / 2;
                 int drawY = (panelHeight - drawHeight) / 2;
-    
+
                 g.drawImage(adImage, drawX, drawY, drawWidth, drawHeight, this);
             }
         }
     }
-    
 
     private void startSubwaySimulator() {
         try {
@@ -241,17 +331,17 @@ public class AdvertisementDisplay extends JPanel {
 
     private void processTrainData(String line) {
         System.out.println("Processing train data: " + line);
-    
+
         if (line.equals("Train positions:")) {
             return;
         }
-    
+
         String[] sections = line.split(": ");
         if (sections.length != 2) {
             System.err.println("Unrecognized train data format: " + line);
             return;
         }
-    
+
         String[] trainData = sections[1].split(", ");
         for (String train : trainData) {
             String[] trainParts = train.split("[()]+");
@@ -259,15 +349,16 @@ public class AdvertisementDisplay extends JPanel {
                 System.err.println("Unrecognized train data format: " + train);
                 continue;
             }
-    
+
             String trainNumberStr = trainParts[0].substring(1).trim();
             String stationCode = trainParts[1].substring(0, 3).trim(); // Extracting station code correctly
-    
+
             try {
                 int trainNumber = Integer.parseInt(trainNumberStr);
                 Point coordinates = trainMap.getStationCoordinates(stationCode);
                 if (coordinates != null) {
-                    System.out.println("Parsed train data - Train number: " + trainNumber + ", coordinates: (" + coordinates.x + ", " + coordinates.y + ")");
+                    System.out.println("Parsed train data - Train number: " + trainNumber + ", coordinates: ("
+                            + coordinates.x + ", " + coordinates.y + ")");
                     trainPositions.put(trainNumber, coordinates);
                 } else {
                     System.err.println("No coordinates found for station: " + stationCode);
@@ -283,40 +374,71 @@ public class AdvertisementDisplay extends JPanel {
             System.err.println("Map image is null, cannot update train positions.");
             return;
         }
-    
+
         BufferedImage updatedMap = new BufferedImage(mapImage.getWidth(), mapImage.getHeight(), mapImage.getType());
         Graphics2D g2d = updatedMap.createGraphics();
         g2d.drawImage(mapImage, 0, 0, null);
-    
+
         // Get the dimensions of the map image and the panel
         int imgWidth = mapImage.getWidth();
         int imgHeight = mapImage.getHeight();
         int panelWidth = adPanel.getWidth();
         int panelHeight = adPanel.getHeight();
-    
+
         double scaleX = (double) panelWidth / imgWidth;
         double scaleY = (double) panelHeight / imgHeight;
-    
+
         // Draw all train positions
         for (Map.Entry<Integer, Point> entry : trainPositions.entrySet()) {
             int trainNumber = entry.getKey();
             Point pos = entry.getValue();
-            
+
             // Scale the coordinates
             int scaledX = (int) (pos.x * scaleX);
             int scaledY = (int) (pos.y * scaleY);
-    
+
             g2d.setColor(Color.RED);
             g2d.fillOval(scaledX - 5, scaledY - 5, 10, 10);
-            System.out.println("Drawing train number " + trainNumber + " on map at coordinates: (" + scaledX + ", " + scaledY + ")");
+            System.out.println("Drawing train number " + trainNumber + " on map at coordinates: (" + scaledX + ", "
+                    + scaledY + ")");
         }
-    
+
         g2d.dispose();
         adPanel.setAdImage(updatedMap);
         System.out.println("Map updated with new train positions.");
     }
-    
 
+    private void updateWeatherVisual() {
+        if (weatherCondition != null && !weatherCondition.isEmpty()) {
+            ImageIcon weatherVisual = WeatherFetch.getWeatherVisual(weatherCondition); // Get the weather visual as
+                                                                                       // ImageIcon
+
+            // Define the maximum dimensions for the image to fit within the panel
+            int maxWidth = 230; // Adjust this value as needed
+            int maxHeight = 230; // Adjust this value as needed
+
+            Image originalImage = weatherVisual.getImage();
+
+            // Calculate the aspect ratio
+            double aspectRatio = (double) originalImage.getHeight(null) / originalImage.getWidth(null);
+
+            // Calculate the new dimensions maintaining the aspect ratio
+            int targetWidth = maxWidth;
+            int targetHeight = (int) (maxWidth * aspectRatio);
+
+            if (targetHeight > maxHeight) {
+                targetHeight = maxHeight;
+                targetWidth = (int) (maxHeight / aspectRatio);
+            }
+
+            // Scale the image to the target size
+            Image scaledImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+            ImageIcon scaledWeatherVisual = new ImageIcon(scaledImage);
+
+            // Set the scaled weather visual as ImageIcon
+            weatherVisualLabel.setIcon(scaledWeatherVisual);
+        }
+    }
 
     public static void main(String[] args) {
         // Create the main frame for the application
