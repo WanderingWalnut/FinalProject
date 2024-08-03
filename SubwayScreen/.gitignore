@@ -1,0 +1,52 @@
+# Ignore compiled class files
+*.class
+
+# Ignore build directories
+out/
+target/
+bin/
+
+# Maven
+*.log
+*.tmp
+*.pid
+*.gz
+*.old
+*.zip
+*.jar
+*.war
+*.ear
+*.db
+mvnw
+mvnw.cmd
+*.sh
+target/
+
+# Eclipse
+*.swp
+*~.nib
+.classpath
+.project
+.settings/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+
+# VS Code
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
