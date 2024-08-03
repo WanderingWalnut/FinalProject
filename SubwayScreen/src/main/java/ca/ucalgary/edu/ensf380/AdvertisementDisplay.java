@@ -11,12 +11,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.imageio.ImageIO;
-
-import java.util.HashMap;
 import java.util.List;
+import ca.ucalgary.edu.ensf380.NewsFetcher;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,6 +32,7 @@ public class AdvertisementDisplay extends JPanel {
     private JLabel weatherLabel; // Label to display weather data
     private String weatherCondition; // Store the weather condition
     private JLabel weatherConditionLabel; // Label to display weather condition text
+    private JTextArea newsTextArea; // Text area to display news data
 
     public AdvertisementDisplay() {
         setLayout(new GridBagLayout());
@@ -68,6 +67,7 @@ public class AdvertisementDisplay extends JPanel {
         JPanel newsPanel = new JPanel();
         newsPanel.setBackground(Color.BLUE); // Placeholder color
         newsPanel.setPreferredSize(new Dimension(1706, 100)); // Adjust dimensions as needed
+        newsPanel.setLayout(new BorderLayout());
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 2; // Span across two columns
@@ -76,6 +76,21 @@ public class AdvertisementDisplay extends JPanel {
         gbc.weighty = 0.1;
         gbc.fill = GridBagConstraints.BOTH;
         add(newsPanel, gbc);
+
+        // Initialize the news text area
+        newsTextArea = new JTextArea();
+        newsTextArea.setEditable(false);
+        newsTextArea.setLineWrap(true);
+        newsTextArea.setWrapStyleWord(true);
+        newsTextArea.setFont(new Font("Serif", Font.PLAIN, 24));
+        newsTextArea.setBackground(Color.BLUE); // Ensure the background matches the panel
+        newsTextArea.setForeground(Color.WHITE); // Set text color to white
+
+        JScrollPane newsScrollPane = new JScrollPane(newsTextArea);
+        newsPanel.add(newsScrollPane, BorderLayout.CENTER);
+
+        // Fetch and display news
+        fetchAndDisplayNews("Calgary"); // Replace "Calgary" with the desired keyword
 
         // Add a panel for next train data below the news panel
         JPanel nextTrainPanel = new JPanel();
@@ -175,13 +190,21 @@ public class AdvertisementDisplay extends JPanel {
     private void fetchAndDisplayWeather() {
         new Thread(() -> {
             try {
-                String weatherData = WeatherFetch.fetchHTML("https://wttr.in/Calgary?format=" + URLEncoder.encode("%t+%c", StandardCharsets.UTF_8));
+                String weatherData = WeatherFetch.fetchHTML(
+                        "https://wttr.in/Calgary?format=" + URLEncoder.encode("%t+%c", StandardCharsets.UTF_8));
+                System.out.println("Fetched raw weather data: " + weatherData); // Debugging statement
                 String parsedWeather = WeatherFetch.parseHTML(weatherData);
+                System.out.println("Parsed weather: " + parsedWeather); // Debugging statement
+
+                // Manually override for debugging
+                // weatherCondition = "☀️"; // Uncomment this line to manually set the condition
+                // to Sunny
                 String[] weatherParts = parsedWeather.split(" ");
                 weatherCondition = weatherParts[1]; // Extract condition
-    
+                System.out.println("Extracted weather condition: " + weatherCondition); // Debugging statement
+
                 String conditionText = getConditionText(weatherCondition);
-    
+
                 SwingUtilities.invokeLater(() -> {
                     weatherLabel.setText(parsedWeather);
                     weatherLabel.setFont(new Font("Serif", Font.PLAIN, 24)); // Ensure larger font size is set
@@ -195,7 +218,7 @@ public class AdvertisementDisplay extends JPanel {
             }
         }).start();
     }
-    
+
     // Helper method to get condition text based on the weather condition icon
     private String getConditionText(String condition) {
         switch (condition) {
@@ -209,11 +232,13 @@ public class AdvertisementDisplay extends JPanel {
                 return "Cloudy";
             case "❄️":
                 return "Snowy";
+            case "🌦":
+                return "Light Rain"; // Add a mapping for this condition
             default:
+                System.err.println("Unrecognized condition: " + condition); // Add debugging statement
                 return "Weather condition not recognized.";
         }
     }
-    
 
     private class AdTask extends TimerTask {
         @Override
@@ -410,35 +435,54 @@ public class AdvertisementDisplay extends JPanel {
 
     private void updateWeatherVisual() {
         if (weatherCondition != null && !weatherCondition.isEmpty()) {
-            ImageIcon weatherVisual = WeatherFetch.getWeatherVisual(weatherCondition); // Get the weather visual as
-                                                                                       // ImageIcon
+            ImageIcon weatherVisual = WeatherFetch.getWeatherVisual(weatherCondition);
 
-            // Define the maximum dimensions for the image to fit within the panel
-            int maxWidth = 230; // Adjust this value as needed
-            int maxHeight = 230; // Adjust this value as needed
+            if (weatherVisual != null) {
+                int maxWidth = 230; // Adjust this value as needed
+                int maxHeight = 230; // Adjust this value as needed
 
-            Image originalImage = weatherVisual.getImage();
+                Image originalImage = weatherVisual.getImage();
 
-            // Calculate the aspect ratio
-            double aspectRatio = (double) originalImage.getHeight(null) / originalImage.getWidth(null);
+                double aspectRatio = (double) originalImage.getHeight(null) / originalImage.getWidth(null);
 
-            // Calculate the new dimensions maintaining the aspect ratio
-            int targetWidth = maxWidth;
-            int targetHeight = (int) (maxWidth * aspectRatio);
+                int targetWidth = maxWidth;
+                int targetHeight = (int) (maxWidth * aspectRatio);
 
-            if (targetHeight > maxHeight) {
-                targetHeight = maxHeight;
-                targetWidth = (int) (maxHeight / aspectRatio);
+                if (targetHeight > maxHeight) {
+                    targetHeight = maxHeight;
+                    targetWidth = (int) (maxHeight / aspectRatio);
+                }
+
+                Image scaledImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+                ImageIcon scaledWeatherVisual = new ImageIcon(scaledImage);
+
+                weatherVisualLabel.setIcon(scaledWeatherVisual);
+            } else {
+                weatherVisualLabel.setIcon(null); // Clear the icon if no visual is found
+                System.err.println("Weather visual not found for condition: " + weatherCondition);
             }
-
-            // Scale the image to the target size
-            Image scaledImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
-            ImageIcon scaledWeatherVisual = new ImageIcon(scaledImage);
-
-            // Set the scaled weather visual as ImageIcon
-            weatherVisualLabel.setIcon(scaledWeatherVisual);
         }
     }
+
+    private void fetchAndDisplayNews(String keyword) {
+        new Thread(() -> {
+            try {
+                List<String> newsTitles = NewsFetcher.fetchNews(keyword);
+                SwingUtilities.invokeLater(() -> {
+                    StringBuilder newsContent = new StringBuilder();
+                    for (String title : newsTitles) {
+                        newsContent.append(title).append("  |  ");
+                    }
+                    newsTextArea.setText(newsContent.toString());
+                    NewsFetcher.startNewsScrolling(newsTextArea);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                SwingUtilities.invokeLater(() -> newsTextArea.setText("Failed to load news."));
+            }
+        }).start();
+    }
+    
 
     public static void main(String[] args) {
         // Create the main frame for the application

@@ -40,16 +40,10 @@ public class WeatherFetch {
 
     // Method to parse the HTML content
     public static String parseHTML(String html) {
-        // Adjust the pattern to handle the emoji and special characters
         String weatherPattern = "([-+]?\\d+°C)\\s*(.+)";
-
-        // Compile the pattern
         Pattern weatherRegex = Pattern.compile(weatherPattern);
-
-        // Match the pattern
         Matcher weatherMatcher = weatherRegex.matcher(html);
-
-        // Extract and return weather data
+    
         if (weatherMatcher.find()) {
             String temperature = weatherMatcher.group(1);
             String condition = weatherMatcher.group(2).trim().replaceAll("[+]", ""); // Clean up condition
@@ -79,6 +73,9 @@ public class WeatherFetch {
             case "❄️":
                 imagePath += "Snowy.png";
                 break;
+            case "🌦":
+                imagePath += "LightRain.png";
+                break;
             default:
                 imagePath = null;
                 break;
@@ -96,4 +93,5 @@ public class WeatherFetch {
         }
         return null;
     }
+    
 }
