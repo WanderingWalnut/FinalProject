@@ -9,10 +9,12 @@ import java.util.List;
 import javax.swing.JTextArea;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class NewsFetcher {
     private static final String API_KEY = "6IoGr7aC0nWvQaD8yIMnwtWKgl0jXocbvvUR8AAZ";
-    private static final String API_URL = "https://api.thenewsapi.com/v1/news/headlines?api_token=" + API_KEY;
+    private static final String API_URL = "https://api.thenewsapi.com/v1/news/top?api_token=" + API_KEY;
 
     public static List<String> fetchNews(String keyword) throws Exception {
         String urlString = API_URL + "&search=" + keyword;
@@ -34,11 +36,13 @@ public class NewsFetcher {
 
         System.out.println("Response: " + response.toString()); // Debugging line
 
-        // Parse JSON response (simple example, use a library like Jackson or Gson for more complex parsing)
+        // Parse JSON response
         List<String> newsTitles = new ArrayList<>();
-        String[] articles = response.toString().split("\"title\":\"");
-        for (int i = 1; i < articles.length; i++) {
-            String title = articles[i].split("\",")[0];
+        JSONObject jsonResponse = new JSONObject(response.toString());
+        JSONArray articles = jsonResponse.getJSONArray("data");
+        for (int i = 0; i < articles.length(); i++) {
+            JSONObject article = articles.getJSONObject(i);
+            String title = article.getString("title");
             newsTitles.add(title);
         }
         return newsTitles;
@@ -57,5 +61,6 @@ public class NewsFetcher {
         }, 0, 150);
     }
 }
+
 
 
