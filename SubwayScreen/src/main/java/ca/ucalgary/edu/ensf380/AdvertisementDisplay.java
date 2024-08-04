@@ -33,7 +33,7 @@ public class AdvertisementDisplay extends JPanel {
     private String weatherCondition; // Store the weather condition
     private JLabel weatherConditionLabel; // Label to display weather condition text
     private JTextArea newsTextArea; // Text area to display news data
-
+    private CurrentTimePanel currentTimePanel; // Panel to display current time
 
     public AdvertisementDisplay() {
         setLayout(new GridBagLayout());
@@ -130,11 +130,16 @@ public class AdvertisementDisplay extends JPanel {
         weatherConditionLabel.setFont(new Font("Serif", Font.PLAIN, 30)); // Adjust font size as needed
         weatherConditionLabel.setForeground(Color.WHITE); // Adjust color as needed
 
-        // Add weatherLabel, weatherVisualLabel, and weatherConditionLabel to
-        // weatherPanel
+        // Initialize the CurrentTimePanel
+        currentTimePanel = new CurrentTimePanel();
+
+        // Add weatherLabel, weatherVisualLabel, weatherConditionLabel, and
+        // currentTimePanel to weatherPanel
         weatherLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         weatherVisualLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         weatherConditionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        currentTimePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        currentTimePanel.setBackground(Color.BLACK); // Adjust color as needed
 
         weatherPanel.add(Box.createVerticalGlue()); // Add vertical space
         weatherPanel.add(weatherLabel);
@@ -142,6 +147,8 @@ public class AdvertisementDisplay extends JPanel {
         weatherPanel.add(weatherVisualLabel);
         weatherPanel.add(Box.createVerticalStrut(20)); // Add space between the labels
         weatherPanel.add(weatherConditionLabel); // Add weather condition label
+        weatherPanel.add(Box.createVerticalStrut(20)); // Add space between the labels
+        weatherPanel.add(currentTimePanel); // Add current time panel
         weatherPanel.add(Box.createVerticalGlue()); // Add vertical space
 
         // Add a component listener to handle the size of weatherVisualLabel
@@ -196,9 +203,9 @@ public class AdvertisementDisplay extends JPanel {
                 String parsedWeather = WeatherFetch.parseHTML(weatherData);
                 String[] weatherParts = parsedWeather.split(" ");
                 weatherCondition = weatherParts[1]; // Extract condition
-    
+
                 String conditionText = getConditionText(weatherCondition);
-    
+
                 SwingUtilities.invokeLater(() -> {
                     weatherLabel.setText(parsedWeather);
                     weatherLabel.setFont(new Font("Serif", Font.PLAIN, 24)); // Ensure larger font size is set
@@ -212,7 +219,7 @@ public class AdvertisementDisplay extends JPanel {
             }
         }).start();
     }
-    
+
     private String getConditionText(String condition) {
         switch (condition) {
             case "☀️":
@@ -231,7 +238,6 @@ public class AdvertisementDisplay extends JPanel {
                 return "Weather condition not recognized.";
         }
     }
-    
 
     private class AdTask extends TimerTask {
         @Override
