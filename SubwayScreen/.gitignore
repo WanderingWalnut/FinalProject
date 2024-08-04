@@ -44,9 +44,6 @@ nbdist/
 nbactions.xml
 nb-configuration.xml
 
-# VS Code
-.vscode/
-
 # OS-specific files
 .DS_Store
 Thumbs.db
