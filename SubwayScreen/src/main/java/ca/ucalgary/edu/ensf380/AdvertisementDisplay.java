@@ -34,6 +34,7 @@ public class AdvertisementDisplay extends JPanel {
     private JLabel weatherConditionLabel; // Label to display weather condition text
     private JTextArea newsTextArea; // Text area to display news data
 
+
     public AdvertisementDisplay() {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -192,19 +193,12 @@ public class AdvertisementDisplay extends JPanel {
             try {
                 String weatherData = WeatherFetch.fetchHTML(
                         "https://wttr.in/Calgary?format=" + URLEncoder.encode("%t+%c", StandardCharsets.UTF_8));
-                System.out.println("Fetched raw weather data: " + weatherData); // Debugging statement
                 String parsedWeather = WeatherFetch.parseHTML(weatherData);
-                System.out.println("Parsed weather: " + parsedWeather); // Debugging statement
-
-                // Manually override for debugging
-                // weatherCondition = "☀️"; // Uncomment this line to manually set the condition
-                // to Sunny
                 String[] weatherParts = parsedWeather.split(" ");
                 weatherCondition = weatherParts[1]; // Extract condition
-                System.out.println("Extracted weather condition: " + weatherCondition); // Debugging statement
-
+    
                 String conditionText = getConditionText(weatherCondition);
-
+    
                 SwingUtilities.invokeLater(() -> {
                     weatherLabel.setText(parsedWeather);
                     weatherLabel.setFont(new Font("Serif", Font.PLAIN, 24)); // Ensure larger font size is set
@@ -218,8 +212,7 @@ public class AdvertisementDisplay extends JPanel {
             }
         }).start();
     }
-
-    // Helper method to get condition text based on the weather condition icon
+    
     private String getConditionText(String condition) {
         switch (condition) {
             case "☀️":
@@ -228,17 +221,17 @@ public class AdvertisementDisplay extends JPanel {
                 return "Rainy";
             case "⛅":
                 return "Partly Cloudy";
+            case "⛅️":
+                return "Partly Cloudy";
             case "☁️":
                 return "Cloudy";
             case "❄️":
                 return "Snowy";
-            case "🌦":
-                return "Light Rain"; // Add a mapping for this condition
             default:
-                System.err.println("Unrecognized condition: " + condition); // Add debugging statement
                 return "Weather condition not recognized.";
         }
     }
+    
 
     private class AdTask extends TimerTask {
         @Override
@@ -469,12 +462,7 @@ public class AdvertisementDisplay extends JPanel {
             try {
                 List<String> newsTitles = NewsFetcher.fetchNews(keyword);
                 SwingUtilities.invokeLater(() -> {
-                    StringBuilder newsContent = new StringBuilder();
-                    for (String title : newsTitles) {
-                        newsContent.append(title).append("  |  ");
-                    }
-                    newsTextArea.setText(newsContent.toString());
-                    NewsFetcher.startNewsScrolling(newsTextArea);
+                    NewsFetcher.startNewsScrolling(newsTextArea, newsTitles); // Start scrolling news with headlines
                 });
             } catch (Exception e) {
                 e.printStackTrace();
@@ -482,7 +470,6 @@ public class AdvertisementDisplay extends JPanel {
             }
         }).start();
     }
-    
 
     public static void main(String[] args) {
         // Create the main frame for the application

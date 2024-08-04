@@ -67,14 +67,14 @@ public class WeatherFetch {
             case "⛅":
                 imagePath += "PartlyCloudy.png";
                 break;
+            case "⛅️": // Handle both versions of partly cloudy
+                imagePath += "PartlyCloudy.png";
+                break;
             case "☁️":
                 imagePath += "Cloudy.png";
                 break;
             case "❄️":
                 imagePath += "Snowy.png";
-                break;
-            case "🌦":
-                imagePath += "LightRain.png";
                 break;
             default:
                 imagePath = null;
@@ -93,5 +93,4 @@ public class WeatherFetch {
         }
         return null;
     }
-    
-}
+}    

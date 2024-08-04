@@ -51,17 +51,18 @@ public class NewsFetcher {
         }
     }
 
-    public static void startNewsScrolling(JTextArea textArea) {
+    public static void startNewsScrolling(JTextArea textArea, List<String> newsTitles) {
         Timer timer = new Timer();
+        final int[] index = {0};
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                String currentText = textArea.getText();
-                if (!currentText.isEmpty()) {
-                    textArea.setText(currentText.substring(1) + currentText.charAt(0));
+                if (!newsTitles.isEmpty()) {
+                    textArea.setText(newsTitles.get(index[0]));
+                    index[0] = (index[0] + 1) % newsTitles.size();
                 }
             }
-        }, 0, 150);
+        }, 0, 5000); // Change headline every 5 seconds
     }
 }
 
