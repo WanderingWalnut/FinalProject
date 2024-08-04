@@ -13,11 +13,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import javax.imageio.ImageIO;
 import java.util.List;
-import ca.ucalgary.edu.ensf380.NewsFetcher;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdvertisementDisplay extends JPanel {
     private AdPanel adPanel;
@@ -34,8 +35,13 @@ public class AdvertisementDisplay extends JPanel {
     private JLabel weatherConditionLabel; // Label to display weather condition text
     private JTextArea newsTextArea; // Text area to display news data
     private CurrentTimePanel currentTimePanel; // Panel to display current time
+    private TrainTracker trainTracker; // Train tracker instance
+    private JLabel nextTrainLabel;
+    private JLabel previousStationLabel;
+    private JLabel currentStationLabel;
+    private JLabel nextStationsLabel;
 
-    public AdvertisementDisplay() {
+    public AdvertisementDisplay(String line, int trainNumber) {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -93,10 +99,14 @@ public class AdvertisementDisplay extends JPanel {
         // Fetch and display news
         fetchAndDisplayNews("Calgary"); // Replace "Calgary" with the desired keyword
 
+        // Initialize TrainTracker
+        trainTracker = new TrainTracker(line, trainNumber);
+
         // Add a panel for next train data below the news panel
         JPanel nextTrainPanel = new JPanel();
         nextTrainPanel.setBackground(Color.YELLOW); // Placeholder color
         nextTrainPanel.setPreferredSize(new Dimension(1706, 100)); // Adjust dimensions as needed
+        nextTrainPanel.setLayout(new BoxLayout(nextTrainPanel, BoxLayout.Y_AXIS));
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2; // Span across two columns
@@ -105,6 +115,22 @@ public class AdvertisementDisplay extends JPanel {
         gbc.weighty = 0.1;
         gbc.fill = GridBagConstraints.BOTH;
         add(nextTrainPanel, gbc);
+
+        previousStationLabel = new JLabel("Previous Station: N/A", SwingConstants.CENTER);
+        previousStationLabel.setFont(new Font("Serif", Font.PLAIN, 24));
+        previousStationLabel.setForeground(Color.BLACK);
+
+        currentStationLabel = new JLabel("Current Station: N/A", SwingConstants.CENTER);
+        currentStationLabel.setFont(new Font("Serif", Font.PLAIN, 24));
+        currentStationLabel.setForeground(Color.BLACK);
+
+        nextStationsLabel = new JLabel("<html>Next Stations:<br>N/A</html>", SwingConstants.CENTER);
+        nextStationsLabel.setFont(new Font("Serif", Font.PLAIN, 24));
+        nextStationsLabel.setForeground(Color.BLACK);
+
+        nextTrainPanel.add(previousStationLabel);
+        nextTrainPanel.add(currentStationLabel);
+        nextTrainPanel.add(nextStationsLabel);
 
         // Add a panel for weather data to the right of the ad panel
         JPanel weatherPanel = new JPanel();
@@ -241,7 +267,6 @@ public class AdvertisementDisplay extends JPanel {
                 return "Weather condition not recognized.";
         }
     }
-    
 
     private class AdTask extends TimerTask {
         @Override
@@ -359,17 +384,17 @@ public class AdvertisementDisplay extends JPanel {
 
     private void processTrainData(String line) {
         System.out.println("Processing train data: " + line);
-
+    
         if (line.equals("Train positions:")) {
             return;
         }
-
+    
         String[] sections = line.split(": ");
         if (sections.length != 2) {
             System.err.println("Unrecognized train data format: " + line);
             return;
         }
-
+    
         String[] trainData = sections[1].split(", ");
         for (String train : trainData) {
             String[] trainParts = train.split("[()]+");
@@ -377,10 +402,10 @@ public class AdvertisementDisplay extends JPanel {
                 System.err.println("Unrecognized train data format: " + train);
                 continue;
             }
-
+    
             String trainNumberStr = trainParts[0].substring(1).trim();
             String stationCode = trainParts[1].substring(0, 3).trim(); // Extracting station code correctly
-
+    
             try {
                 int trainNumber = Integer.parseInt(trainNumberStr);
                 Point coordinates = trainMap.getStationCoordinates(stationCode);
@@ -388,6 +413,12 @@ public class AdvertisementDisplay extends JPanel {
                     System.out.println("Parsed train data - Train number: " + trainNumber + ", coordinates: ("
                             + coordinates.x + ", " + coordinates.y + ")");
                     trainPositions.put(trainNumber, coordinates);
+    
+                    // Update the next train panel for the tracked train
+                    if (trainNumber == trainTracker.getTrackedTrainNumber()) {
+                        Station currentStation = trainTracker.getStation(stationCode);
+                        SwingUtilities.invokeLater(() -> updateNextTrainPanel(currentStation));
+                    }
                 } else {
                     System.err.println("No coordinates found for station: " + stationCode);
                 }
@@ -481,13 +512,132 @@ public class AdvertisementDisplay extends JPanel {
         }).start();
     }
 
-    public static void main(String[] args) {
-        // Create the main frame for the application
-        JFrame frame = new JFrame("Subway Screen");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(2560, 1600); // Adjust the size as needed
-        frame.add(new AdvertisementDisplay());
-        frame.setVisible(true);
+    private void processNextTrainData(String line) {
+        System.out.println("Processing next train data: " + line);
+
+        if (line.equals("Train positions:")) {
+            return;
+        }
+
+        String[] sections = line.split(": ");
+        if (sections.length != 2) {
+            System.err.println("Unrecognized train data format: " + line);
+            return;
+        }
+
+        String[] trainData = sections[1].split(", ");
+        for (String train : trainData) {
+            String[] trainParts = train.split("[()]+");
+            if (trainParts.length < 2) {
+                System.err.println("Unrecognized train data format: " + train);
+                continue;
+            }
+
+            String trainNumberStr = trainParts[0].substring(1).trim();
+            String stationCode = trainParts[1].substring(0, 3).trim(); // Extracting station code correctly
+
+            try {
+                int trainNumber = Integer.parseInt(trainNumberStr);
+                if (trainNumber == this.trainTracker.getTrackedTrainNumber()) {
+                    updateNextTrainStations(stationCode);
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Error parsing train number or coordinates: " + e.getMessage());
+            }
+        }
     }
 
-}
+    private void updateNextTrainStations(String currentStationCode) {
+        Station currentStation = trainTracker.getStation(currentStationCode);
+        if (currentStation == null) {
+            previousStationLabel.setText("Previous Station: N/A");
+            currentStationLabel.setText("Current Station: N/A");
+            nextStationsLabel.setText("<html>Next Stations:<br>N/A</html>");
+            return;
+        }
+
+        // Assuming the stations are stored in order, get the index of the current
+        // station
+        List<Station> lineStations = trainTracker.getStationsForLine(this.trainTracker.getTrackedLine());
+        int currentIndex = lineStations.indexOf(currentStation);
+
+        previousStationLabel.setText(
+                "Previous Station: " + (currentIndex > 0 ? lineStations.get(currentIndex - 1).getName() : "N/A"));
+        currentStationLabel.setText("Current Station: " + currentStation.getName());
+
+        StringBuilder nextStations = new StringBuilder("<html>Next Stations:<br>");
+        for (int i = 1; i <= 3; i++) {
+            int nextIndex = currentIndex + i;
+            nextStations.append("Next Station ").append(i).append(": ")
+                    .append(nextIndex < lineStations.size() ? lineStations.get(nextIndex).getName() : "N/A")
+                    .append("<br>");
+        }
+        nextStations.append("</html>");
+        nextStationsLabel.setText(nextStations.toString());
+    }
+
+    private void updateMapWithNextTrainData() {
+        if (mapImage == null) {
+            System.err.println("Map image is null, cannot update train positions.");
+            return;
+        }
+
+        BufferedImage updatedMap = new BufferedImage(mapImage.getWidth(), mapImage.getHeight(), mapImage.getType());
+        Graphics2D g2d = updatedMap.createGraphics();
+        g2d.drawImage(mapImage, 0, 0, null);
+
+        // Get the dimensions of the map image and the panel
+        int imgWidth = mapImage.getWidth();
+        int imgHeight = mapImage.getHeight();
+        int panelWidth = adPanel.getWidth();
+        int panelHeight = adPanel.getHeight();
+
+        double scaleX = (double) panelWidth / imgWidth;
+        double scaleY = (double) panelHeight / imgHeight;
+
+        // Draw only the tracked train's position
+        int trackedTrainNumber = this.trainTracker.getTrackedTrainNumber();
+        Point pos = trainPositions.get(trackedTrainNumber);
+
+        if (pos != null) {
+            // Scale the coordinates
+            int scaledX = (int) (pos.x * scaleX);
+            int scaledY = (int) (pos.y * scaleY);
+
+            g2d.setColor(Color.RED);
+            g2d.fillOval(scaledX - 5, scaledY - 5, 10, 10);
+            System.out.println("Drawing train number " + trackedTrainNumber + " on map at coordinates: (" + scaledX
+                    + ", " + scaledY + ")");
+        }
+
+        g2d.dispose();
+        adPanel.setAdImage(updatedMap);
+        System.out.println("Map updated with new train positions.");
+    }
+
+    private void updateNextTrainPanel(Station currentStation) {
+        if (currentStation == null) {
+            previousStationLabel.setText("Previous Station: N/A");
+            currentStationLabel.setText("Current Station: N/A");
+            nextStationsLabel.setText("<html>Next Stations:<br>N/A</html>");
+            return;
+        }
+    
+        Station previousStation = trainTracker.getPreviousStation(currentStation);
+        Station nextStation = trainTracker.getNextStation(currentStation);
+    
+        List<Station> nextStations = new ArrayList<>();
+        Station tempNextStation = nextStation;
+        for (int i = 0; i < 3 && tempNextStation != null; i++) {
+            nextStations.add(tempNextStation);
+            tempNextStation = trainTracker.getNextStation(tempNextStation);
+        }
+    
+        previousStationLabel.setText("Previous Station: " + (previousStation != null ? previousStation.getName() : "N/A"));
+        currentStationLabel.setText("Current Station: " + currentStation.getName());
+        nextStationsLabel.setText("<html>Next Stations:<br>" + nextStations.stream()
+                .map(Station::getName)
+                .reduce((s1, s2) -> s1 + "<br>" + s2)
+                .orElse("N/A") + "</html>");
+    }
+}    
