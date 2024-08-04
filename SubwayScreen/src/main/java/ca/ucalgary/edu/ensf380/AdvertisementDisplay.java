@@ -227,17 +227,21 @@ public class AdvertisementDisplay extends JPanel {
             case "🌧️":
                 return "Rainy";
             case "⛅":
-                return "Partly Cloudy";
-            case "⛅️":
+            case "⛅️": // Note the different character variations
                 return "Partly Cloudy";
             case "☁️":
                 return "Cloudy";
             case "❄️":
                 return "Snowy";
+            case "🌦":
+                return "Showers";
+            case "⛈️":
+                return "Thunderstorm";
             default:
                 return "Weather condition not recognized.";
         }
     }
+    
 
     private class AdTask extends TimerTask {
         @Override
