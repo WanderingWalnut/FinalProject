@@ -1,6 +1,5 @@
 package ca.ucalgary.edu.ensf380;
 
-import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

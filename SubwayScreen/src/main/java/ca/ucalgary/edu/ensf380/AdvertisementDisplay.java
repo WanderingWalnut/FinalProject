@@ -19,6 +19,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
 import java.util.List;
+import ca.ucalgary.edu.ensf380.weather.WeatherFetch;
 
 public class AdvertisementDisplay extends JPanel {
     private AdPanel adPanel;
@@ -229,9 +230,9 @@ public class AdvertisementDisplay extends JPanel {
                 String parsedWeather = WeatherFetch.parseHTML(weatherData);
                 String[] weatherParts = parsedWeather.split(" ");
                 weatherCondition = weatherParts[1]; // Extract condition
-
+    
                 String conditionText = getConditionText(weatherCondition);
-
+    
                 SwingUtilities.invokeLater(() -> {
                     weatherLabel.setText(parsedWeather);
                     weatherLabel.setFont(new Font("Serif", Font.PLAIN, 24)); // Ensure larger font size is set
