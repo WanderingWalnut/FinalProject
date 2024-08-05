@@ -41,8 +41,12 @@ public class AdvertisementDisplay extends JPanel {
     private JLabel previousStationLabel;
     private JLabel currentStationLabel;
     private JLabel nextStationsLabel;
+    private int trackedTrainNumber;
+
 
     public AdvertisementDisplay(String line, int trainNumber) {
+
+        this.trackedTrainNumber = trainNumber;
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -132,6 +136,7 @@ public class AdvertisementDisplay extends JPanel {
         nextTrainPanel.add(previousStationLabel);
         nextTrainPanel.add(currentStationLabel);
         nextTrainPanel.add(nextStationsLabel);
+
 
         // Add a panel for weather data to the right of the ad panel
         JPanel weatherPanel = new JPanel();
@@ -384,50 +389,54 @@ public class AdvertisementDisplay extends JPanel {
     }
 
     private void processTrainData(String line) {
-        System.out.println("Processing train data: " + line);
-    
-        if (line.equals("Train positions:")) {
-            return;
+    System.out.println("Processing train data: " + line);
+
+    if (line.equals("Train positions:")) {
+        return;
+    }
+
+    String[] sections = line.split(": ");
+    if (sections.length != 2) {
+        System.err.println("Unrecognized train data format: " + line);
+        return;
+    }
+
+    String[] trainData = sections[1].split(", ");
+    for (String train : trainData) {
+        String[] trainParts = train.split("[()]+");
+        if (trainParts.length < 2) {
+            System.err.println("Unrecognized train data format: " + train);
+            continue;
         }
-    
-        String[] sections = line.split(": ");
-        if (sections.length != 2) {
-            System.err.println("Unrecognized train data format: " + line);
-            return;
-        }
-    
-        String[] trainData = sections[1].split(", ");
-        for (String train : trainData) {
-            String[] trainParts = train.split("[()]+");
-            if (trainParts.length < 2) {
-                System.err.println("Unrecognized train data format: " + train);
-                continue;
-            }
-    
-            String trainNumberStr = trainParts[0].substring(1).trim();
-            String stationCode = trainParts[1].substring(0, 3).trim(); // Extracting station code correctly
-    
-            try {
-                int trainNumber = Integer.parseInt(trainNumberStr);
-                Point coordinates = trainMap.getStationCoordinates(stationCode);
-                if (coordinates != null) {
-                    System.out.println("Parsed train data - Train number: " + trainNumber + ", coordinates: ("
-                            + coordinates.x + ", " + coordinates.y + ")");
-                    trainPositions.put(trainNumber, coordinates);
-    
-                    // Update the next train panel for the tracked train
-                    if (trainNumber == trainTracker.getTrackedTrainNumber()) {
-                        Station currentStation = trainTracker.getStation(stationCode);
-                        SwingUtilities.invokeLater(() -> updateNextTrainPanel(currentStation));
-                    }
-                } else {
-                    System.err.println("No coordinates found for station: " + stationCode);
+
+        String trainNumberStr = trainParts[0].substring(1).trim();
+        String stationCode = trainParts[1].substring(0, 3).trim(); // Extracting station code correctly
+
+        try {
+            int trainNumber = Integer.parseInt(trainNumberStr);
+            Point coordinates = trainMap.getStationCoordinates(stationCode);
+            if (coordinates != null) {
+                System.out.println("Parsed train data - Train number: " + trainNumber + ", coordinates: ("
+                        + coordinates.x + ", " + coordinates.y + ")");
+                trainPositions.put(trainNumber, coordinates);
+
+                // Update the next train panel for the tracked train
+                if (trainNumber == trackedTrainNumber) {
+                    Station currentStation = trainTracker.getStation(stationCode);
+                    SwingUtilities.invokeLater(() -> updateNextTrainStations(currentStation));
                 }
-            } catch (NumberFormatException e) {
-                System.err.println("Error parsing train number or coordinates: " + e.getMessage());
+            } else {
+                System.err.println("No coordinates found for station: " + stationCode);
             }
+        } catch (NumberFormatException e) {
+            System.err.println("Error parsing train number or coordinates: " + e.getMessage());
         }
     }
+}
+
+
+
+
 
     private void updateMapWithTrainData() {
         if (mapImage == null) {
@@ -513,69 +522,36 @@ public class AdvertisementDisplay extends JPanel {
         }).start();
     }
 
-    private void processNextTrainData(String line) {
-        System.out.println("Processing next train data: " + line);
-
-        if (line.equals("Train positions:")) {
-            return;
-        }
-
-        String[] sections = line.split(": ");
-        if (sections.length != 2) {
-            System.err.println("Unrecognized train data format: " + line);
-            return;
-        }
-
-        String[] trainData = sections[1].split(", ");
-        for (String train : trainData) {
-            String[] trainParts = train.split("[()]+");
-            if (trainParts.length < 2) {
-                System.err.println("Unrecognized train data format: " + train);
-                continue;
-            }
-
-            String trainNumberStr = trainParts[0].substring(1).trim();
-            String stationCode = trainParts[1].substring(0, 3).trim(); // Extracting station code correctly
-
-            try {
-                int trainNumber = Integer.parseInt(trainNumberStr);
-                if (trainNumber == this.trainTracker.getTrackedTrainNumber()) {
-                    updateNextTrainStations(stationCode);
-                }
-            } catch (NumberFormatException e) {
-                System.err.println("Error parsing train number or coordinates: " + e.getMessage());
-            }
-        }
+    private void updateNextTrainStations(Station currentStation) {
+    if (currentStation == null) {
+        previousStationLabel.setText("Previous Station: N/A");
+        currentStationLabel.setText("Current Station: N/A");
+        nextStationsLabel.setText("<html>Next Stations:<br>N/A</html>");
+        return;
     }
 
-    private void updateNextTrainStations(String currentStationCode) {
-        Station currentStation = trainTracker.getStation(currentStationCode);
-        if (currentStation == null) {
-            previousStationLabel.setText("Previous Station: N/A");
-            currentStationLabel.setText("Current Station: N/A");
-            nextStationsLabel.setText("<html>Next Stations:<br>N/A</html>");
-            return;
-        }
+    List<Station> lineStations = trainTracker.getStationsForLine(this.trainTracker.getTrackedLine());
+    int currentIndex = lineStations.indexOf(currentStation);
 
-        // Assuming the stations are stored in order, get the index of the current
-        // station
-        List<Station> lineStations = trainTracker.getStationsForLine(this.trainTracker.getTrackedLine());
-        int currentIndex = lineStations.indexOf(currentStation);
+    previousStationLabel.setText(
+            "Previous Station: " + (currentIndex > 0 ? lineStations.get(currentIndex - 1).getName() : "N/A"));
+    currentStationLabel.setText("Current Station: " + currentStation.getName());
 
-        previousStationLabel.setText(
-                "Previous Station: " + (currentIndex > 0 ? lineStations.get(currentIndex - 1).getName() : "N/A"));
-        currentStationLabel.setText("Current Station: " + currentStation.getName());
-
-        StringBuilder nextStations = new StringBuilder("<html>Next Stations:<br>");
-        for (int i = 1; i <= 3; i++) {
-            int nextIndex = currentIndex + i;
-            nextStations.append("Next Station ").append(i).append(": ")
-                    .append(nextIndex < lineStations.size() ? lineStations.get(nextIndex).getName() : "N/A")
-                    .append("<br>");
-        }
-        nextStations.append("</html>");
-        nextStationsLabel.setText(nextStations.toString());
+    StringBuilder nextStations = new StringBuilder("<html>Next Stations:<br>");
+    for (int i = 1; i <= 3; i++) {
+        int nextIndex = currentIndex + i;
+        nextStations.append("Next Station ").append(i).append(": ")
+                .append(nextIndex < lineStations.size() ? lineStations.get(nextIndex).getName() : "N/A")
+                .append("<br>");
     }
+    nextStations.append("</html>");
+    nextStationsLabel.setText(nextStations.toString());
+}
+
+
+
+    
+
 
     private void updateMapWithNextTrainData() {
         if (mapImage == null) {
@@ -641,4 +617,6 @@ public class AdvertisementDisplay extends JPanel {
                 .reduce((s1, s2) -> s1 + "<br>" + s2)
                 .orElse("N/A") + "</html>");
     }
+
+    
 }    
