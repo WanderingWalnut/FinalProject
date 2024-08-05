@@ -74,21 +74,21 @@ public class TrainTracker {
         return getStationsForLine(trackedLine);
     }
 
-    public Station getNextStation(Station currentStation) {
-        List<Station> path = getPathForTrain();
-        int currentIndex = path.indexOf(currentStation);
-        if (currentIndex != -1 && currentIndex < path.size() - 1) {
-            return path.get(currentIndex + 1);
-        }
-        return null;
-    }
-
     public Station getPreviousStation(Station currentStation) {
-        List<Station> path = getPathForTrain();
-        int currentIndex = path.indexOf(currentStation);
+        List<Station> lineStations = getStationsForLine(currentStation.getLineCode());
+        int currentIndex = lineStations.indexOf(currentStation);
         if (currentIndex > 0) {
-            return path.get(currentIndex - 1);
+            return lineStations.get(currentIndex - 1);
         }
         return null;
     }
-}
+    
+    public Station getNextStation(Station currentStation) {
+        List<Station> lineStations = getStationsForLine(currentStation.getLineCode());
+        int currentIndex = lineStations.indexOf(currentStation);
+        if (currentIndex < lineStations.size() - 1) {
+            return lineStations.get(currentIndex + 1);
+        }
+        return null;
+    }
+}    

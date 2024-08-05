@@ -1,5 +1,6 @@
 package ca.ucalgary.edu.ensf380;
 
+
 public class Station {
     private final String code;
     private final String name;
@@ -33,5 +34,12 @@ public class Station {
 
     public String getCommonLines() {
         return commonLines;
+    }
+
+    public String getLineCode() {
+        if (commonLines != null && !commonLines.isEmpty()) {
+            return commonLines.split(",")[0].trim();
+        }
+        return null;
     }
 }

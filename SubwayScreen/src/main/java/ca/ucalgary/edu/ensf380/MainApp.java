@@ -4,6 +4,8 @@ import javax.swing.*;
 
 public class MainApp {
     public static void main(String[] args) {
+
+        System.out.println("Updated Code Running");
         if (args.length != 2) {
             System.err.println("Usage: java MainApp <line> <trainNumber>");
             System.exit(1);
