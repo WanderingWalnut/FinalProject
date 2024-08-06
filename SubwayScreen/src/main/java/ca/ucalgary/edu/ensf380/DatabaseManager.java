@@ -28,7 +28,7 @@ public class DatabaseManager {
 
     // Method to create a new table in the database
     /**
-     * @throws SQLException if database access/connect error occurs 
+     * @throws SQLException if database access/connect error occurs
      */
     public static void createTable() {
         String sql = "CREATE TABLE IF NOT EXISTS advertisements (\n"
@@ -37,9 +37,9 @@ public class DatabaseManager {
                 + " media_type TEXT NOT NULL,\n"
                 + " media_path TEXT\n"
                 + ");";
-        
+
         try (Connection conn = DriverManager.getConnection(URL);
-             Statement stmt = conn.createStatement()) {
+                Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
             System.out.println("Table created.");
         } catch (SQLException e) {
@@ -49,9 +49,9 @@ public class DatabaseManager {
 
     /**
      * 
-     * @param content content the textual content of the advertisement
-     * @param mediaType the type of media 
-     * @param mediaPath the path of the media file 
+     * @param content   content the textual content of the advertisement
+     * @param mediaType the type of media
+     * @param mediaPath the path of the media file
      * @throws SQLException if database access/connect error occurs
      */
     // Method to insert a new advertisement into the database
@@ -59,7 +59,7 @@ public class DatabaseManager {
         String sql = "INSERT INTO advertisements(content, media_type, media_path) VALUES(?,?,?)";
 
         try (Connection conn = DriverManager.getConnection(URL);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, content);
             pstmt.setString(2, mediaType);
             pstmt.setString(3, mediaPath);
@@ -72,8 +72,9 @@ public class DatabaseManager {
 
     /**
      * 
-     * @return a list of {@code Ad} objects containing the content, media type, and media path of each advertisement
-     * @throws SQLException if a database access error occurs or the URL is null 
+     * @return a list of {@code Ad} objects containing the content, media type, and
+     *         media path of each advertisement
+     * @throws SQLException if a database access error occurs or the URL is null
      */
     // Method to retrieve advertisements from the database
     public static List<Ad> getAdvertisements() {
@@ -81,8 +82,8 @@ public class DatabaseManager {
         List<Ad> ads = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(URL);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
                 String content = rs.getString("content");
@@ -97,15 +98,14 @@ public class DatabaseManager {
         return ads;
     }
 
-
     /**
      * 
-     * @param args command line arguments 
+     * @param args command line arguments
      */
     public static void main(String[] args) {
         createNewDatabase();
         createTable();
-        
+
         // Insert sample ads into the database
         insertAd(null, "IMAGE", "data/ads/ad1.jpeg");
         insertAd(null, "IMAGE", "data/ads/ad2.jpeg");

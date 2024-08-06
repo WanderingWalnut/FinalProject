@@ -21,10 +21,10 @@ public class NewsFetcher {
     private static final String API_URL = "https://api.thenewsapi.com/v1/news/all?api_token=" + API_KEY;
 
     /**
- * @param keyword is passed as a String type 
- * @throw IOException if error is encountered 
- * @return newsTitles is returned as List<String> type
- */
+     * @param keyword is passed as a String type
+     * @throw IOException if error is encountered
+     * @return newsTitles is returned as List<String> type
+     */
     public static List<String> fetchNews(String keyword) throws IOException {
         OkHttpClient client = new OkHttpClient();
         String urlString = API_URL + "&search=" + keyword;
@@ -55,13 +55,15 @@ public class NewsFetcher {
             throw new IOException("Failed to fetch news: " + responseCode);
         }
     }
-/**
- * @param textArea is returned as a JTexArea Type, newsTitles is returned as List<String> type
- * 
- */
+
+    /**
+     * @param textArea is returned as a JTexArea Type, newsTitles is returned as
+     *                 List<String> type
+     * 
+     */
     public static void startNewsScrolling(JTextArea textArea, List<String> newsTitles) {
         Timer timer = new Timer();
-        final int[] index = {0};
+        final int[] index = { 0 };
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -73,6 +75,3 @@ public class NewsFetcher {
         }, 0, 5000); // Change headline every 5 seconds
     }
 }
-
-
-

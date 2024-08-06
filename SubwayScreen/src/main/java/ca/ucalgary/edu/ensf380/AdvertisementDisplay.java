@@ -47,8 +47,9 @@ public class AdvertisementDisplay extends JPanel {
 
     /**
      * 
-     * @param userTrain the train number for which the advertisement display is being set up
-     * @throws IOException if map image fails to read 
+     * @param userTrain the train number for which the advertisement display is
+     *                  being set up
+     * @throws IOException if map image fails to read
      */
     public AdvertisementDisplay(int userTrain) {
         this.userTrain = userTrain;
@@ -267,7 +268,9 @@ public class AdvertisementDisplay extends JPanel {
     /**
      * 
      * @param condition
-     * @return various conditions such as Sunny, Rainy, Partly Cloudy, Cloudly, Snowy, Showers, ThunderStorms, or Weather Condition not recognized based on the input condition
+     * @return various conditions such as Sunny, Rainy, Partly Cloudy, Cloudly,
+     *         Snowy, Showers, ThunderStorms, or Weather Condition not recognized
+     *         based on the input condition
      */
     private String getConditionText(String condition) {
         switch (condition) {
@@ -290,7 +293,7 @@ public class AdvertisementDisplay extends JPanel {
                 return "Weather condition not recognized.";
         }
     }
-    
+
     private class AdTask extends TimerTask {
         @Override
         public void run() {
@@ -371,8 +374,9 @@ public class AdvertisementDisplay extends JPanel {
             }
         }
     }
+
     /**
-     * @throws IOException if the BufferedReader fails to read 
+     * @throws IOException if the BufferedReader fails to read
      */
     private void startSubwaySimulator() {
         try {
@@ -421,7 +425,7 @@ public class AdvertisementDisplay extends JPanel {
 
     /**
      * 
-     * @param line  String representing a line of train data
+     * @param line String representing a line of train data
      */
     public void processTrainData(String line) {
         System.out.println("Processing train data: " + line);
@@ -497,7 +501,8 @@ public class AdvertisementDisplay extends JPanel {
 
     /**
      * 
-     * @param currentStation Station object representing the current station of the train
+     * @param currentStation Station object representing the current station of the
+     *                       train
      */
     public void updateNextTrainPanel(Station currentStation) {
         if (currentStation == null) {
@@ -542,8 +547,9 @@ public class AdvertisementDisplay extends JPanel {
 
         System.out.println("updateNextTrainPanel: Panel updated");
     }
+
     /**
-     * @return if mapImage is null 
+     * @return if mapImage is null
      */
     private void updateMapWithTrainData() {
         if (mapImage == null) {
@@ -614,10 +620,11 @@ public class AdvertisementDisplay extends JPanel {
             }
         }
     }
+
     /**
      * 
      * @param keyword keyword the keyword used to fetch news headlines
-     * @throws Exception  if fetchNews fails to work 
+     * @throws Exception if fetchNews fails to work
      */
     private void fetchAndDisplayNews(String keyword) {
         new Thread(() -> {
@@ -659,9 +666,10 @@ public class AdvertisementDisplay extends JPanel {
         nextStationsLabel.setText(nextStations.toString());
     }
 
-     /**
+    /**
      * 
-     * @param currentStation the Station object representing the current station of the train
+     * @param currentStation the Station object representing the current station of
+     *                       the train
      */
     private void updateMapWithNextTrainData() {
         if (mapImage == null) {

@@ -15,8 +15,9 @@ public class TrainTracker {
     private int userTrain;
 
     /**
- * @param trackedLine is passed as a String type and trackedTrainNumber is passed as an int type 
- */
+     * @param trackedLine is passed as a String type and trackedTrainNumber is
+     *                    passed as an int type
+     */
     public TrainTracker(int userTrain) {
         this.userTrain = userTrain;
         try {
@@ -27,10 +28,10 @@ public class TrainTracker {
         }
     }
 
-    /** 
- * @param filePath is passed as a String type
- * @throws IOException if an error is found   
- */
+    /**
+     * @param filePath is passed as a String type
+     * @throws IOException if an error is found
+     */
     private void readCSVFile(String filePath) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -69,41 +70,44 @@ public class TrainTracker {
         }
     }
 
-    /** 
- * @param code
- * @return stations.get(code) is returned with as a Station type
- */
+    /**
+     * @param code
+     * @return stations.get(code) is returned with as a Station type
+     */
 
     public Station getStation(String code) {
         return stations.get(code);
     }
 
-    /** 
- * 
- * @return trackedLine is returned with as a String type 
- */
+    /**
+     * 
+     * @return trackedLine is returned with as a String type
+     */
     public String getTrackedLine() {
         return trackedLine;
     }
-    /** 
- * 
- * @return trackedTrainNumber is returned as an int type
- */
+
+    /**
+     * 
+     * @return trackedTrainNumber is returned as an int type
+     */
     public int getTrackedTrainNumber() {
         return trackedTrainNumber;
     }
-/** 
- * @param line which is of String type is passed 
- * @return lineStations is returned as a  List<Station> type
- * 
- */
+
+    /**
+     * @param line which is of String type is passed
+     * @return lineStations is returned as a List<Station> type
+     * 
+     */
     public int getUserTrain() {
         return userTrain;
     }
-/** 
- * @param code
- * @return stations.get(code) is returned with the type List<Station>
- */
+
+    /**
+     * @param code
+     * @return stations.get(code) is returned with the type List<Station>
+     */
     public List<Station> getStationsForLine(String line) {
         List<Station> lineStations = new ArrayList<>();
         for (Station station : stations.values()) {
@@ -117,17 +121,21 @@ public class TrainTracker {
         }
         return lineStations;
     }
-/** 
- * @param currentStation is passed as a Station type
- * @return returns null OR returns path.get(currentIndex + 1) as a Station type if logical condition is met
- */
+
+    /**
+     * @param currentStation is passed as a Station type
+     * @return returns null OR returns path.get(currentIndex + 1) as a Station type
+     *         if logical condition is met
+     */
     public List<Station> getPathForTrain() {
         return getStationsForLine(trackedLine);
     }
-/** 
- * @param currentStation is passed as a Station Type
- * @return returns null OR path.get(currentIndex - 1) as a Station type depending on if logical condition is met
- */
+
+    /**
+     * @param currentStation is passed as a Station Type
+     * @return returns null OR path.get(currentIndex - 1) as a Station type
+     *         depending on if logical condition is met
+     */
     public Station getPreviousStation(Station currentStation) {
         List<Station> lineStations = getStationsForLine(currentStation.getLineCode());
         System.out.println("Line stations: " + lineStations);

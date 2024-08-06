@@ -1,0 +1,1 @@
+typeSearchIndex = [{"p":"ca.ucalgary.edu.ensf380","l":"Ad"},{"l":"All Classes and Interfaces","u":"allclasses-index.html"}];updateSearchResults();
