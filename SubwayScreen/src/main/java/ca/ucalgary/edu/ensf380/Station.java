@@ -1,19 +1,18 @@
 package ca.ucalgary.edu.ensf380;
 
-
 public class Station {
     private final String code;
     private final String name;
     private final int x;
     private final int y;
-    private final String commonLines;
+    private final String commonStations;
 
-    public Station(String code, String name, int x, int y, String commonLines) {
+    public Station(String code, String name, int x, int y, String commonStations) {
         this.code = code;
         this.name = name;
         this.x = x;
         this.y = y;
-        this.commonLines = commonLines;
+        this.commonStations = commonStations != null ? commonStations : ""; // Initialize to empty string if null
     }
 
     public String getCode() {
@@ -32,13 +31,13 @@ public class Station {
         return y;
     }
 
-    public String getCommonLines() {
-        return commonLines;
+    public String getCommonStations() {
+        return commonStations;
     }
 
     public String getLineCode() {
-        if (commonLines != null && !commonLines.isEmpty()) {
-            return commonLines.split(",")[0].trim();
+        if (commonStations != null && !commonStations.isEmpty()) {
+            return commonStations.split(",")[0].trim();
         }
         return null;
     }

@@ -12,10 +12,10 @@ public class TrainTracker {
     private Map<String, Station> stations = new HashMap<>();
     private String trackedLine;
     private int trackedTrainNumber;
+    private int userTrain;
 
-    public TrainTracker(String trackedLine, int trackedTrainNumber) {
-        this.trackedLine = trackedLine;
-        this.trackedTrainNumber = trackedTrainNumber;
+    public TrainTracker(int userTrain) {
+        this.userTrain = userTrain;
         try {
             // Adjust the path to the Map.csv file
             readCSVFile("Map/Map.csv");
@@ -34,15 +34,29 @@ public class TrainTracker {
                     continue; // Skip the header line
                 }
                 String[] values = line.split(",");
-                if (values.length >= 8) { // Ensure there are at least 8 elements
+                if (values.length >= 7) { // Ensure there are at least 7 elements
                     String stationCode = values[3]; // Use StationCode
                     String stationName = values[4]; // Use StationName
                     int x = (int) Double.parseDouble(values[5]); // Use X coordinate
                     int y = (int) Double.parseDouble(values[6]); // Use Y coordinate
-                    String lines = values[7]; // Use Common Stations
+                    String commonStations = values.length >= 8 ? values[7] : ""; // Use Common Stations if available
 
-                    Station station = new Station(stationCode, stationName, x, y, lines);
+                    // Debug statement to check the parsed data
+                    System.out.println("Parsed Station - Code: " + stationCode + ", Name: " + stationName
+                            + ", X: " + x + ", Y: " + y + ", Common Stations: " + commonStations);
+
+                    Station station = new Station(stationCode, stationName, x, y, commonStations);
                     stations.put(stationCode, station);
+
+                    // Conditional message for stations with common stations
+                    if (!commonStations.isEmpty()) {
+                        System.out.println("You can change lines here at " + stationName + " (" + stationCode
+                                + "). Common Stations: " + commonStations);
+                    }
+                }
+                if (values.length < 6) {
+                    // Debug statement to show if a line is skipped due to incomplete data
+                    System.err.println("Incomplete data for line: " + line);
                 }
             }
         }
@@ -60,10 +74,15 @@ public class TrainTracker {
         return trackedTrainNumber;
     }
 
+    public int getUserTrain() {
+        return userTrain;
+    }
+
     public List<Station> getStationsForLine(String line) {
         List<Station> lineStations = new ArrayList<>();
         for (Station station : stations.values()) {
-            if (station.getCommonLines().contains(line)) {
+            String commonStations = station.getCommonStations();
+            if (!commonStations.isEmpty() && commonStations.contains(line)) {
                 lineStations.add(station);
             }
         }
@@ -82,7 +101,7 @@ public class TrainTracker {
         }
         return null;
     }
-    
+
     public Station getNextStation(Station currentStation) {
         List<Station> lineStations = getStationsForLine(currentStation.getLineCode());
         int currentIndex = lineStations.indexOf(currentStation);
@@ -91,4 +110,4 @@ public class TrainTracker {
         }
         return null;
     }
-}    
+}
