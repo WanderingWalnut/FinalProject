@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="SubwayScreen/src/main/java"/>
+	<classpathentry kind="lib" path="SubwayScreen/lib/commons-csv-1.8.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/lib/gson-2.8.8.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/lib/kotlin-stdlib-1.5.31.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/lib/okhttp-4.9.3.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/lib/okio-2.10.0.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/lib/sqlite-jdbc-3.34.0.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/lib/WeatherFetch-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/Simulator/exe/SubwaySimulator.jar"/>
+	<classpathentry kind="lib" path="SubwayScreen/target/SubwayScreen-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="output" path="SubwayScreen/out"/>
+</classpath>

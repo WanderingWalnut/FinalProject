@@ -80,7 +80,7 @@ public class AdvertisementDisplay extends JPanel {
         // Add a panel for news data below the ad panel
         JPanel newsPanel = new JPanel();
         newsPanel.setBackground(Color.BLUE); // Placeholder color
-        newsPanel.setPreferredSize(new Dimension(1706, 70)); // Adjust dimensions as needed
+        newsPanel.setPreferredSize(new Dimension(1706, 100)); // Adjust dimensions as needed
         newsPanel.setLayout(new BorderLayout());
         gbc.gridx = 0;
         gbc.gridy = 1;
