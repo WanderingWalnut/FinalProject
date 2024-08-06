@@ -36,7 +36,7 @@ public class TrainTracker {
                 String[] values = line.split(",");
                 if (values.length >= 7) { // Ensure there are at least 7 elements
                     String stationCode = values[3]; // Use StationCode
-                    String stationName = values[4]; // Use StationName
+                    String stationName = values[0]; // Use StationName
                     int x = (int) Double.parseDouble(values[5]); // Use X coordinate
                     int y = (int) Double.parseDouble(values[6]); // Use Y coordinate
                     String commonStations = values.length >= 8 ? values[7] : ""; // Use Common Stations if available

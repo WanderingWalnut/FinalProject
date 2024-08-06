@@ -391,7 +391,7 @@ public class AdvertisementDisplay extends JPanel {
         }
     }
 
-    private void processTrainData(String line) {
+    public void processTrainData(String line) {
         System.out.println("Processing train data: " + line);
 
         if (line.equals("Train positions:")) {
@@ -463,7 +463,7 @@ public class AdvertisementDisplay extends JPanel {
         }
     }
 
-    private void updateNextTrainPanel(Station currentStation) {
+    public void updateNextTrainPanel(Station currentStation) {
         if (currentStation == null) {
             System.out.println("updateNextTrainPanel: currentStation is null");
             previousStationLabel.setText("Previous Station: N/A");
