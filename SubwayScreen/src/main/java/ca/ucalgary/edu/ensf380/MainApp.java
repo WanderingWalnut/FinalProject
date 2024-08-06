@@ -2,6 +2,10 @@ package ca.ucalgary.edu.ensf380;
 
 import javax.swing.*;
 
+/**
+     * 
+     * @param args command line arguments
+     */
 public class MainApp {
     public static void main(String[] args) {
         System.out.println("Updated Code Running");

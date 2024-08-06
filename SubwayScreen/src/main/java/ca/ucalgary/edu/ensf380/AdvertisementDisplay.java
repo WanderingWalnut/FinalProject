@@ -45,6 +45,11 @@ public class AdvertisementDisplay extends JPanel {
     private int trackedTrainNumber;
     private int userTrain;
 
+    /**
+     * 
+     * @param userTrain the train number for which the advertisement display is being set up
+     * @throws IOException if map image fails to read 
+     */
     public AdvertisementDisplay(int userTrain) {
         this.userTrain = userTrain;
         this.trainTracker = new TrainTracker(userTrain);
@@ -230,6 +235,10 @@ public class AdvertisementDisplay extends JPanel {
     }
 
     // Modify the fetchAndDisplayWeather method in AdvertisementDisplay class
+    /**
+     * @throws Exception if it fails to fetch and parse WeatherData from link
+     */
+    // Modify the fetchAndDisplayWeather method in AdvertisementDisplay class
     private void fetchAndDisplayWeather() {
         new Thread(() -> {
             try {
@@ -255,6 +264,11 @@ public class AdvertisementDisplay extends JPanel {
         }).start();
     }
 
+    /**
+     * 
+     * @param condition
+     * @return various conditions such as Sunny, Rainy, Partly Cloudy, Cloudly, Snowy, Showers, ThunderStorms, or Weather Condition not recognized based on the input condition
+     */
     private String getConditionText(String condition) {
         switch (condition) {
             case "☀️":
@@ -276,7 +290,7 @@ public class AdvertisementDisplay extends JPanel {
                 return "Weather condition not recognized.";
         }
     }
-
+    
     private class AdTask extends TimerTask {
         @Override
         public void run() {
@@ -303,6 +317,11 @@ public class AdvertisementDisplay extends JPanel {
     private class AdPanel extends JPanel {
         private Image adImage;
 
+        /**
+         * 
+         * @param imagePath path of image to be displayed
+         * @throws IOException if image path fail to read
+         */
         public void setAdImage(String imagePath) {
             try {
                 this.adImage = ImageIO.read(new File(imagePath));
@@ -312,11 +331,18 @@ public class AdvertisementDisplay extends JPanel {
             }
         }
 
+        /**
+         * 
+         * @param image image to be displayed
+         */
         public void setAdImage(Image image) {
             this.adImage = image;
             repaint();
         }
 
+        /**
+         * @param g this is the graphics display
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -345,7 +371,9 @@ public class AdvertisementDisplay extends JPanel {
             }
         }
     }
-
+    /**
+     * @throws IOException if the BufferedReader fails to read 
+     */
     private void startSubwaySimulator() {
         try {
             System.out.println("Starting SubwaySimulator.jar...");
@@ -391,6 +419,10 @@ public class AdvertisementDisplay extends JPanel {
         }
     }
 
+    /**
+     * 
+     * @param line  String representing a line of train data
+     */
     public void processTrainData(String line) {
         System.out.println("Processing train data: " + line);
 
@@ -463,6 +495,10 @@ public class AdvertisementDisplay extends JPanel {
         }
     }
 
+    /**
+     * 
+     * @param currentStation Station object representing the current station of the train
+     */
     public void updateNextTrainPanel(Station currentStation) {
         if (currentStation == null) {
             System.out.println("updateNextTrainPanel: currentStation is null");
@@ -506,7 +542,9 @@ public class AdvertisementDisplay extends JPanel {
 
         System.out.println("updateNextTrainPanel: Panel updated");
     }
-
+    /**
+     * @return if mapImage is null 
+     */
     private void updateMapWithTrainData() {
         if (mapImage == null) {
             System.err.println("Map image is null, cannot update train positions.");
@@ -576,7 +614,11 @@ public class AdvertisementDisplay extends JPanel {
             }
         }
     }
-
+    /**
+     * 
+     * @param keyword keyword the keyword used to fetch news headlines
+     * @throws Exception  if fetchNews fails to work 
+     */
     private void fetchAndDisplayNews(String keyword) {
         new Thread(() -> {
             try {
@@ -617,6 +659,10 @@ public class AdvertisementDisplay extends JPanel {
         nextStationsLabel.setText(nextStations.toString());
     }
 
+     /**
+     * 
+     * @param currentStation the Station object representing the current station of the train
+     */
     private void updateMapWithNextTrainData() {
         if (mapImage == null) {
             System.err.println("Map image is null, cannot update train positions.");
