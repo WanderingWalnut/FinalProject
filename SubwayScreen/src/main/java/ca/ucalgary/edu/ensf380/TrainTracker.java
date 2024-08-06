@@ -82,7 +82,10 @@ public class TrainTracker {
         List<Station> lineStations = new ArrayList<>();
         for (Station station : stations.values()) {
             String commonStations = station.getCommonStations();
-            if (!commonStations.isEmpty() && commonStations.contains(line)) {
+            if (commonStations == null) {
+                commonStations = ""; // Ensure commonStations is not null
+            }
+            if (commonStations.contains(line) || line.equals(station.getLineCode())) {
                 lineStations.add(station);
             }
         }
@@ -95,7 +98,9 @@ public class TrainTracker {
 
     public Station getPreviousStation(Station currentStation) {
         List<Station> lineStations = getStationsForLine(currentStation.getLineCode());
+        System.out.println("Line stations: " + lineStations);
         int currentIndex = lineStations.indexOf(currentStation);
+        System.out.println("Current index: " + currentIndex);
         if (currentIndex > 0) {
             return lineStations.get(currentIndex - 1);
         }
@@ -104,7 +109,9 @@ public class TrainTracker {
 
     public Station getNextStation(Station currentStation) {
         List<Station> lineStations = getStationsForLine(currentStation.getLineCode());
+        System.out.println("Line stations: " + lineStations);
         int currentIndex = lineStations.indexOf(currentStation);
+        System.out.println("Current index: " + currentIndex);
         if (currentIndex < lineStations.size() - 1) {
             return lineStations.get(currentIndex + 1);
         }

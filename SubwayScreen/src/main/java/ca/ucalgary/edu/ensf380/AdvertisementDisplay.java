@@ -80,7 +80,7 @@ public class AdvertisementDisplay extends JPanel {
         // Add a panel for news data below the ad panel
         JPanel newsPanel = new JPanel();
         newsPanel.setBackground(Color.BLUE); // Placeholder color
-        newsPanel.setPreferredSize(new Dimension(1706, 100)); // Adjust dimensions as needed
+        newsPanel.setPreferredSize(new Dimension(1706, 70)); // Adjust dimensions as needed
         newsPanel.setLayout(new BorderLayout());
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -123,16 +123,18 @@ public class AdvertisementDisplay extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         add(nextTrainPanel, gbc);
 
-        previousStationLabel = new JLabel("Previous Station: N/A", SwingConstants.CENTER);
-        previousStationLabel.setFont(new Font("Serif", Font.PLAIN, 24));
+        previousStationLabel = new JLabel("Previous Station: Skyline Heights Station", SwingConstants.CENTER);
+        previousStationLabel.setFont(new Font("Serif", Font.PLAIN, 20));
         previousStationLabel.setForeground(Color.BLACK);
 
-        currentStationLabel = new JLabel("Current Station: N/A", SwingConstants.CENTER);
-        currentStationLabel.setFont(new Font("Serif", Font.PLAIN, 24));
+        currentStationLabel = new JLabel("Current Station: Cedar Heights Station", SwingConstants.CENTER);
+        currentStationLabel.setFont(new Font("Serif", Font.PLAIN, 20));
         currentStationLabel.setForeground(Color.BLACK);
 
-        nextStationsLabel = new JLabel("<html>Next Stations:<br>N/A</html>", SwingConstants.CENTER);
-        nextStationsLabel.setFont(new Font("Serif", Font.PLAIN, 24));
+        nextStationsLabel = new JLabel(
+                "<html>Next Stations:<br>Hillside Station<br>North Hills Station<br>Bayview Heights Station</html>",
+                SwingConstants.CENTER);
+        nextStationsLabel.setFont(new Font("Serif", Font.PLAIN, 20));
         nextStationsLabel.setForeground(Color.BLACK);
 
         nextTrainPanel.add(previousStationLabel);
@@ -391,35 +393,35 @@ public class AdvertisementDisplay extends JPanel {
 
     private void processTrainData(String line) {
         System.out.println("Processing train data: " + line);
-    
+
         if (line.equals("Train positions:")) {
             return;
         }
-    
+
         int colonIndex = line.indexOf(": ");
         if (colonIndex == -1) {
             System.err.println("Unrecognized train data format (no colon): " + line);
             return;
         }
-    
+
         String directionData = line.substring(colonIndex + 2);
         System.out.println("Direction data: " + directionData);
         String[] trainData = directionData.split(", (?=T\\d+\\()");
-    
+
         for (String train : trainData) {
             System.out.println("Processing train entry: " + train);
-    
+
             Pattern pattern = Pattern.compile("T(\\d+)\\((\\w{3}), ([FB])\\)");
             Matcher matcher = pattern.matcher(train);
             if (matcher.matches()) {
                 int trainNumber = Integer.parseInt(matcher.group(1));
                 String stationCode = matcher.group(2);
                 String direction = matcher.group(3).equals("F") ? "forward" : "backward";
-    
+
                 System.out.println("Train number: " + trainNumber);
                 System.out.println("Station code: " + stationCode);
                 System.out.println("Direction: " + direction);
-    
+
                 if (trainNumber == userTrain) {
                     System.out.println("This is the User's Train");
                     // Fetch and display details for userTrain
@@ -427,26 +429,27 @@ public class AdvertisementDisplay extends JPanel {
                     System.out.println("Train number: " + trainNumber);
                     System.out.println("Station code: " + stationCode);
                     System.out.println("Direction: " + direction);
-    
+
                     Station currentStation = trainTracker.getStation(stationCode);
                     if (currentStation != null) {
                         System.out.println("Current Station: " + currentStation.getName());
                         Station previousStation = trainTracker.getPreviousStation(currentStation);
                         Station nextStation = trainTracker.getNextStation(currentStation);
-    
-                        System.out.println("Previous Station: " + (previousStation != null ? previousStation.getName() : "N/A"));
+
+                        System.out.println(
+                                "Previous Station: " + (previousStation != null ? previousStation.getName() : "N/A"));
                         System.out.println("Next Station: " + (nextStation != null ? nextStation.getName() : "N/A"));
                     } else {
                         System.out.println("No station found for code: " + stationCode);
                     }
                 }
-    
+
                 Point coordinates = trainMap.getStationCoordinates(stationCode);
                 if (coordinates != null) {
                     System.out.println("Parsed train data - Train number: " + trainNumber + ", coordinates: ("
                             + coordinates.x + ", " + coordinates.y + ")");
                     trainPositions.put(trainNumber, coordinates);
-    
+
                     if (trainNumber == trackedTrainNumber) {
                         Station currentStation = trainTracker.getStation(stationCode);
                         SwingUtilities.invokeLater(() -> updateNextTrainPanel(currentStation));
@@ -462,31 +465,47 @@ public class AdvertisementDisplay extends JPanel {
 
     private void updateNextTrainPanel(Station currentStation) {
         if (currentStation == null) {
+            System.out.println("updateNextTrainPanel: currentStation is null");
             previousStationLabel.setText("Previous Station: N/A");
             currentStationLabel.setText("Current Station: N/A");
             nextStationsLabel.setText("<html>Next Stations:<br>N/A</html>");
             return;
         }
-    
+
+        System.out.println("updateNextTrainPanel: Current Station: " + currentStation.getName());
+
         Station previousStation = trainTracker.getPreviousStation(currentStation);
         Station nextStation = trainTracker.getNextStation(currentStation);
-    
+
+        System.out.println("updateNextTrainPanel: Previous Station: "
+                + (previousStation != null ? previousStation.getName() : "N/A"));
+        System.out.println(
+                "updateNextTrainPanel: Next Station: " + (nextStation != null ? nextStation.getName() : "N/A"));
+
         List<Station> nextStations = new ArrayList<>();
         Station tempNextStation = nextStation;
         for (int i = 0; i < 3 && tempNextStation != null; i++) {
             nextStations.add(tempNextStation);
             tempNextStation = trainTracker.getNextStation(tempNextStation);
         }
-    
+
         previousStationLabel
-            .setText("Previous Station: " + (previousStation != null ? previousStation.getName() : "N/A"));
+                .setText("Previous Station: " + (previousStation != null ? previousStation.getName() : "N/A"));
         currentStationLabel.setText("Current Station: " + currentStation.getName());
         nextStationsLabel.setText("<html>Next Stations:<br>" + nextStations.stream()
-            .map(Station::getName)
-            .reduce((s1, s2) -> s1 + "<br>" + s2)
-            .orElse("N/A") + "</html>");
+                .map(Station::getName)
+                .reduce((s1, s2) -> s1 + "<br>" + s2)
+                .orElse("N/A") + "</html>");
+
+        // Force repaint
+        SwingUtilities.invokeLater(() -> {
+            previousStationLabel.repaint();
+            currentStationLabel.repaint();
+            nextStationsLabel.repaint();
+        });
+
+        System.out.println("updateNextTrainPanel: Panel updated");
     }
-    
 
     private void updateMapWithTrainData() {
         if (mapImage == null) {
