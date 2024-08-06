@@ -13,6 +13,9 @@ public class DatabaseManager {
     private static final String URL = "jdbc:sqlite:subway_ads.db";
 
     // Method to create a new SQLite database
+    /**
+     * @throws SQLException if a database access error occurs or the URL is null
+     */
     public static void createNewDatabase() {
         try (Connection conn = DriverManager.getConnection(URL)) {
             if (conn != null) {
@@ -24,6 +27,9 @@ public class DatabaseManager {
     }
 
     // Method to create a new table in the database
+    /**
+     * @throws SQLException if database access/connect error occurs 
+     */
     public static void createTable() {
         String sql = "CREATE TABLE IF NOT EXISTS advertisements (\n"
                 + " id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
@@ -41,6 +47,13 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * 
+     * @param content content the textual content of the advertisement
+     * @param mediaType the type of media 
+     * @param mediaPath the path of the media file 
+     * @throws SQLException if database access/connect error occurs
+     */
     // Method to insert a new advertisement into the database
     public static void insertAd(String content, String mediaType, String mediaPath) {
         String sql = "INSERT INTO advertisements(content, media_type, media_path) VALUES(?,?,?)";
@@ -57,6 +70,11 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * 
+     * @return a list of {@code Ad} objects containing the content, media type, and media path of each advertisement
+     * @throws SQLException if a database access error occurs or the URL is null 
+     */
     // Method to retrieve advertisements from the database
     public static List<Ad> getAdvertisements() {
         String sql = "SELECT content, media_type, media_path FROM advertisements";
@@ -79,6 +97,11 @@ public class DatabaseManager {
         return ads;
     }
 
+
+    /**
+     * 
+     * @param args command line arguments 
+     */
     public static void main(String[] args) {
         createNewDatabase();
         createTable();
